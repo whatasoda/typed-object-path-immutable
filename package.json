@@ -1,6 +1,6 @@
 {
   "name": "typed-object-path-immutable",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A well-typed immutable object helper library",
   "main": "cjs/index.js",
   "module": "esm/index.js",
