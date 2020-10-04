@@ -52,9 +52,10 @@ class Immutable<T> {
     protected change(
         value: any,
         path: string,
-        substitutions: KeyLike[],
+        substitutions: readonly KeyLike[],
         callback: (value: any, lastFragment: KeyLike) => void,
     ) {
+        const s = substitutions.slice();
         const fragments = getFragments(path);
         if (fragments.count < substitutions.length) {
             throw new Error(
@@ -66,7 +67,7 @@ class Immutable<T> {
         const { length } = fragments;
         for (let fragment of fragments) {
             if (fragment === '{}') {
-                fragment = substitutions.shift()!;
+                fragment = s.shift()!;
             }
 
             if (++depth < length) {

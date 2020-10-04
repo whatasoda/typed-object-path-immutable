@@ -9,6 +9,7 @@
     "tsc:cjs": "tsc -p tsconfig.cjs.json",
     "tsc:esm": "tsc -p tsconfig.esm.json",
     "build": "rm -rf ./lib && node ./tsc.js && cp package.json README.md LICENSE ./lib",
+    "preversion": "NO_EMIT=1 node ./tsc.js",
     "postversion": "npm run build && git push && git push --tags && npm publish ./lib"
   },
   "repository": {
