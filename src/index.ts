@@ -168,13 +168,15 @@ type _ResolveObjectPath<
     Path extends ''
         ? [
             T,
-            Original[0] extends (ResolvedPath extends '' ? string : `${ResolvedPath}.${string}`) ? TrimDots<`${TrimDots<ResolvedPath>}.${Extract<keyof UnionToIntersection<T>, KeyLike>}`> : never,
+            Original[0] extends (ResolvedPath extends '' ? string : `${TrimDots<ResolvedPath>}.${string}`)
+                ? TrimDots<`${TrimDots<ResolvedPath>}.${Extract<keyof UnionToIntersection<T>, KeyLike>}`>
+            : never,
             ResolvedSubstitutions,
             Err extends ''
                 ? ResolvedSubstitutions extends Original[1]
                     ? '' // success
-                    : `received substitutions are unmet with resolved substitutions`
-                : Err,
+                : `received substitutions are unmet with resolved substitutions`
+            : Err,
         ]
     : Path extends '.'
         ? _ResolveObjectPath<
