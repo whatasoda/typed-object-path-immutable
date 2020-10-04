@@ -168,7 +168,7 @@ type _ResolveObjectPath<
     Path extends ''
         ? [
             T,
-            Original[0] extends `${string}.` | '' ? `${TrimDots<ResolvedPath>}.${Extract<keyof UnionToIntersection<T>, KeyLike>}` : never,
+            Original[0] extends (ResolvedPath extends '' ? string : `${ResolvedPath}.${string}`) ? TrimDots<`${TrimDots<ResolvedPath>}.${Extract<keyof UnionToIntersection<T>, KeyLike>}`> : never,
             ResolvedSubstitutions,
             Err extends ''
                 ? ResolvedSubstitutions extends Original[1]
