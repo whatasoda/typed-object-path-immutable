@@ -153,7 +153,7 @@ type TrimDots<T extends string> =
         ? TrimDots<U>
     : T;
 
-type ResolveObjectPath<T, P extends string, S extends readonly any[]> = _ResolveObjectPath<[P, S], T, P, S, "", []>;
+type ResolveObjectPath<T, P extends string, S extends readonly any[]> = _ResolveObjectPath<[P, S], T, P, S, '', readonly []>;
 // prettier-ignore
 type _ResolveObjectPath<
     Original extends [path: string, substitution: readonly any[]],
@@ -167,7 +167,7 @@ type _ResolveObjectPath<
     Path extends ''
         ? [
             T,
-            Original[0] extends `${string}.` ? `${TrimDots<ResolvedPath>}.${Extract<keyof UnionToIntersection<T>, KeyLike>}` : never,
+            Original[0] extends `${string}.` | '' ? `${TrimDots<ResolvedPath>}.${Extract<keyof UnionToIntersection<T>, KeyLike>}` : never,
             ResolvedSubstitutions,
             Err extends ''
                 ? ResolvedSubstitutions extends Original[1]
