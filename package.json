@@ -1,6 +1,6 @@
 {
   "name": "typed-object-path-immutable",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "A well-typed immutable object helper library",
   "main": "cjs/index.js",
   "module": "esm/index.js",
@@ -9,7 +9,7 @@
     "tsc:cjs": "tsc -p tsconfig.cjs.json",
     "tsc:esm": "tsc -p tsconfig.esm.json",
     "build": "rm -rf ./lib && node ./tsc.js && cp package.json README.md LICENSE ./lib",
-    "postversion": "npm run build && git push && git push --tags && npm publish ./lib"
+    "postversion": "npm run build && git push && git push --tags && npm publish ./lib --access public"
   },
   "repository": {
     "type": "git",
