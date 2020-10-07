@@ -12,33 +12,76 @@ class Immutable<T> {
     public set<P extends string, S extends R[2], R extends ResolveObjectPath<T, P, S>>(
         path: P | R[1],
         substitutions: S,
-        value: R[3] extends '' ? R[0] : never,
+        value: R[0],
     ): this {
         assertActive(this);
-        return this.change(this.value, path, substitutions, (v, f) => {
-            v[f] = value;
+        return this.change<R[3]>(path, substitutions, (v, k) => {
+            v[k] = value;
         });
     }
 
     public delete<P extends string, S extends R[2], R extends ResolveObjectPath<T, P, S>>(
         path: P | R[1],
         substitutions: S,
-    ): R[3] extends '' ? (undefined extends R[0] ? this : never /* cannot delete non-nullable path */) : never {
+    ): this {
         assertActive(this);
-        return this.change(this.value, path, substitutions, (v, f) => {
-            delete v[f];
-        }) as R[3] extends '' ? (undefined extends R[0] ? this : never) : never;
+        type E = undefined extends R[0] ? '' : 'cannot delete non-nullable path';
+        return this.change<R[3], E>(path, substitutions, (v, k) => {
+            delete v[k];
+        });
     }
 
     public ensure<P extends string, S extends R[2], R extends ResolveObjectPath<T, P, S>>(
         path: P | R[1],
         substitutions: S,
-        createValue: R[3] extends '' ? () => NonNullable<R[0]> : never,
+        createValue: () => NonNullable<R[0]>,
     ): this {
         assertActive(this);
-        return this.change(this.value, path, substitutions, (v, f) => {
-            if (v[f] == null) {
-                v[f] = createValue();
+        return this.change<R[3]>(path, substitutions, (v, k) => {
+            if (v[k] == null) {
+                v[k] = createValue();
+            }
+        });
+    }
+
+    public drop<P extends string, S extends R[2], R extends ResolveObjectPath<T, P, S>>(
+        path: P | R[1],
+        substitutions: S,
+        start: number,
+        end?: number,
+    ): this {
+        assertActive(this);
+        type E = R[0] extends any[] ? '' : 'cannot drop from non-array value';
+        return this.change<R[3], E>(path, substitutions, (v, k) => {
+            const arr = (v[k] as any[]);
+            if (end == null) {
+                v[k] = arr.slice(0, start);
+            } else if (start === 0) {
+                v[k] = arr.slice(end);
+            } else {
+                start = start < 0 ? arr.length + start : start;
+                end = Math.max(end < 0 ? arr.length + end : end, start);
+                v[k] = [...arr.slice(0, start), ...arr.slice(end)];
+            }
+        });
+    }
+
+    public insert<P extends string, S extends R[2], R extends ResolveObjectPath<T, P, S>>(
+        path: P | R[1],
+        substitutions: S,
+        index: number | null,
+        items: R[0] extends (infer T)[] ? T[] : never,
+    ): this {
+        assertActive(this);
+        type E = R[0] extends any[] ? '' : 'cannot insert items to non-array value';
+        return this.change<R[3], E>(path, substitutions, (v, k) => {
+            const arr = (v[k] as any[]);
+            if (index == null || index >= arr.length) {
+                v[k] = [...arr, ...items];
+            } else if (index === 0) {
+                v[k] = [...items, ...arr];
+            } else {
+                v[k] = [...arr.slice(0, index), ...items, ...arr.slice(index)];
             }
         });
     }
@@ -49,12 +92,11 @@ class Immutable<T> {
         return this.value;
     }
 
-    protected change(
-        value: any,
+    protected change<R3 extends string, E extends string = ''>(
         path: string,
         substitutions: readonly KeyLike[],
         callback: (value: any, lastFragment: KeyLike) => void,
-    ) {
+    ): R3 extends '' ? E extends '' ? this : never : never {
         const s = substitutions.slice();
         const fragments = getFragments(path);
         if (fragments.count < substitutions.length) {
@@ -64,6 +106,7 @@ class Immutable<T> {
         }
 
         let depth = 0;
+        let curr: any = this.value;
         const { length } = fragments;
         for (let fragment of fragments) {
             if (fragment === '{}') {
@@ -71,12 +114,12 @@ class Immutable<T> {
             }
 
             if (++depth < length) {
-                value = value[fragment] = cloneValue(this.clones, value[fragment]);
+                curr = curr[fragment] = cloneValue(this.clones, curr[fragment]);
             } else {
-                callback(value, fragment);
+                callback(curr, fragment);
             }
         }
-        return this;
+        return this as R3 extends '' ? E extends '' ? this : never : never; // TODO: use throw type
     }
 }
 
